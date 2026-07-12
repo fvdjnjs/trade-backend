@@ -15,7 +15,6 @@ lxml==6.0.0
 openai==1.95.1
 langchain==0.3.26
 langchain-community==0.3.27
-faiss-cpu==1.11.0
 
 aiosmtplib==4.0.1
 email-validator==2.2.0
