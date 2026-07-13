@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
@@ -11,6 +13,10 @@ if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql+psycopg://", 1)
 elif database_url.startswith("postgresql://"):
     database_url = database_url.replace("postgresql://", "postgresql+psycopg://", 1)
+
+if database_url.startswith("sqlite"):
+    sqlite_path = database_url.replace("sqlite:///", "", 1)
+    Path(sqlite_path).expanduser().parent.mkdir(parents=True, exist_ok=True)
 
 connect_args = {"check_same_thread": False} if database_url.startswith("sqlite") else {}
 
