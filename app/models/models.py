@@ -46,6 +46,14 @@ class User(TimestampMixin, Base):
         back_populates="user",
         cascade="all, delete-orphan",
     )
+    email_templates: Mapped[list["EmailTemplate"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+    chat_sessions: Mapped[list["ChatSession"]] = relationship(
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
 
 
 class ClientProfile(TimestampMixin, Base):
@@ -112,3 +120,54 @@ class ContentTask(TimestampMixin, Base):
     status: Mapped[str] = mapped_column(String(50), default="completed", nullable=False)
 
     user: Mapped["User"] = relationship(back_populates="content_tasks")
+
+
+class EmailTemplate(TimestampMixin, Base):
+    """销售和客服常用邮件模板。user_id 为空时表示系统内置模板。"""
+
+    __tablename__ = "email_templates"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), index=True, nullable=True)
+    name: Mapped[str] = mapped_column(String(160), index=True, nullable=False)
+    category: Mapped[str] = mapped_column(String(80), index=True, nullable=False)
+    scenario: Mapped[str] = mapped_column(String(160), nullable=False)
+    subject_template: Mapped[str] = mapped_column(String(500), nullable=False)
+    body_template: Mapped[str] = mapped_column(Text, nullable=False)
+    tone: Mapped[str] = mapped_column(String(80), default="professional", nullable=False)
+    variables: Mapped[list[str]] = mapped_column(JSON, default=list, nullable=False)
+    is_system: Mapped[bool] = mapped_column(default=False, nullable=False)
+
+    user: Mapped["User | None"] = relationship(back_populates="email_templates")
+
+
+class ChatSession(TimestampMixin, Base):
+    """AI 对话会话，用来保存同一段销售沟通里的上下文记忆。"""
+
+    __tablename__ = "chat_sessions"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True, nullable=False)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    scenario: Mapped[str] = mapped_column(String(80), default="general", index=True, nullable=False)
+    memory_summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+    user: Mapped["User"] = relationship(back_populates="chat_sessions")
+    messages: Mapped[list["ChatMessage"]] = relationship(
+        back_populates="session",
+        cascade="all, delete-orphan",
+        order_by="ChatMessage.created_at",
+    )
+
+
+class ChatMessage(TimestampMixin, Base):
+    """AI 对话消息。role 取值为 user 或 assistant。"""
+
+    __tablename__ = "chat_messages"
+
+    id: Mapped[int] = mapped_column(primary_key=True, index=True)
+    session_id: Mapped[int] = mapped_column(ForeignKey("chat_sessions.id"), index=True, nullable=False)
+    role: Mapped[str] = mapped_column(String(40), nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+
+    session: Mapped["ChatSession"] = relationship(back_populates="messages")

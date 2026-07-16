@@ -1,8 +1,19 @@
-from app.models.models import ClientProfile, ContentTask, EmailDraft, User
+from app.models.models import (
+    ChatMessage,
+    ChatSession,
+    ClientProfile,
+    ContentTask,
+    EmailDraft,
+    EmailTemplate,
+    User,
+)
 
 __all__ = [
     "User",
     "ClientProfile",
     "EmailDraft",
     "ContentTask",
+    "EmailTemplate",
+    "ChatSession",
+    "ChatMessage",
 ]

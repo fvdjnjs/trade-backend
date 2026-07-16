@@ -11,6 +11,10 @@ class ReplyDraftRequest(BaseModel):
     thread_id: str
     customer_message: str
     tone: str = "professional"
+    customer_requirement: str | None = None
+    reply_goal: str | None = None
+    template_id: int | None = None
+    user_id: int | None = None
 
 
 class ReplyDraftResponse(BaseModel):

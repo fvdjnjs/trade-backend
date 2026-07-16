@@ -5,7 +5,7 @@ from sqlalchemy import engine_from_config, pool
 
 from app.core.config import get_settings
 from app.core.database import Base
-from app.models import ClientProfile, ContentTask, EmailDraft, User
+from app.models import ChatMessage, ChatSession, ClientProfile, ContentTask, EmailDraft, EmailTemplate, User
 
 
 config = context.config

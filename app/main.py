@@ -2,13 +2,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_allowed_origins
-from app.routers import cold_email, lead_research, localization, mail_assistant
+from app.routers import chat, cold_email, lead_research, localization, mail_assistant, templates
 
 
 app = FastAPI(
     title="外贸全流程提效工作台 API",
     description="面向外贸团队的客户背调、邮件助理和多语言文案生成平台",
-    version="0.1.0",
+    version="0.2.0",
 )
 
 app.add_middleware(
@@ -20,12 +20,14 @@ app.add_middleware(
 )
 
 
+@app.get("/")
+def root():
+    return {"status": "ok", "service": "trade-ai-workbench"}
+
+
 @app.get("/health")
 def health_check():
-    return {
-        "status": "ok",
-        "service": "trade-ai-workbench",
-    }
+    return {"status": "ok", "service": "trade-ai-workbench"}
 
 
 app.include_router(
@@ -50,4 +52,16 @@ app.include_router(
     localization.router,
     prefix="/api/localization",
     tags=["多语言本土化文案引擎"],
+)
+
+app.include_router(
+    templates.router,
+    prefix="/api/templates",
+    tags=["邮件模板库"],
+)
+
+app.include_router(
+    chat.router,
+    prefix="/api/chat",
+    tags=["AI 对话工作台"],
 )

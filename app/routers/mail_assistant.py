@@ -31,8 +31,8 @@ async def connect_mailbox(payload: MailboxConnectRequest):
 
 @router.post("/draft-reply", response_model=ReplyDraftResponse)
 async def draft_reply(payload: ReplyDraftRequest, db: Session = Depends(get_db)):
-    draft = await generate_reply_draft(payload)
-    user = get_or_create_user(db)
+    draft = await generate_reply_draft(payload, db=db)
+    user = get_or_create_user(db, user_id=payload.user_id)
     create_email_draft(
         db=db,
         user=user,

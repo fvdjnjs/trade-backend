@@ -14,6 +14,7 @@ from app.services.persistence_service import (
     create_email_draft,
     get_or_create_user,
 )
+from app.services.template_service import get_template
 
 
 # 这些关键词用于从客户官网首页中识别更有价值的子页面。
@@ -226,6 +227,10 @@ Website text:
 async def generate_cold_email_drafts(
     insights: CompanyInsights,
     product_value_props: str,
+    customer_requirement: str | None = None,
+    email_purpose: str | None = None,
+    target_contact: str | None = None,
+    template_context: str | None = None,
 ) -> list[dict[str, str]]:
     """基于客户画像和我方产品卖点，生成 3 个不同角度的英文开发信。"""
     system_prompt = SYSTEM_PROMPTS["cold_email"]
@@ -244,6 +249,18 @@ Company insights:
 
 Our product value propositions:
 {product_value_props}
+
+Customer stated requirement or sales context:
+{customer_requirement or "Not provided. Infer carefully from the website and keep claims conservative."}
+
+Email purpose:
+{email_purpose or "First-touch cold outreach"}
+
+Target contact:
+{target_contact or "Relevant buyer or decision maker"}
+
+Preferred template or scenario guidance:
+{template_context or "Use the three standard angles below."}
 
 Return JSON in this exact structure:
 {{
@@ -299,13 +316,36 @@ Writing requirements:
 async def generate_cold_emails_from_website(
     customer_url: str,
     product_value_props: str,
+    customer_requirement: str | None = None,
+    email_purpose: str | None = None,
+    target_contact: str | None = None,
+    template_id: int | None = None,
     db: Session | None = None,
     user_id: int | None = None,
 ) -> list[dict[str, str | int | None]]:
     """完整流程：抓取官网、提炼客户画像、生成 3 封英文开发信。"""
     website_text = await fetch_customer_website_text(customer_url)
     insights = await summarize_company_profile(website_text)
-    drafts = await generate_cold_email_drafts(insights, product_value_props)
+
+    template_context = None
+    if db is not None and template_id:
+        template = get_template(db, template_id=template_id, user_id=user_id)
+        if template:
+            template_context = (
+                f"Template name: {template.name}\n"
+                f"Scenario: {template.scenario}\n"
+                f"Subject pattern: {template.subject_template}\n"
+                f"Body pattern:\n{template.body_template}"
+            )
+
+    drafts = await generate_cold_email_drafts(
+        insights=insights,
+        product_value_props=product_value_props,
+        customer_requirement=customer_requirement,
+        email_purpose=email_purpose,
+        target_contact=target_contact,
+        template_context=template_context,
+    )
 
     if db is None:
         return drafts

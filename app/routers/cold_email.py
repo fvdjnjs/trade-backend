@@ -23,6 +23,10 @@ async def generate_cold_emails(payload: ColdEmailGenerateRequest, db: Session = 
         return await generate_cold_emails_from_website(
             customer_url=str(payload.customer_url),
             product_value_props=payload.product_value_props,
+            customer_requirement=payload.customer_requirement,
+            email_purpose=payload.email_purpose,
+            target_contact=payload.target_contact,
+            template_id=payload.template_id,
             db=db,
             user_id=payload.user_id,
         )
