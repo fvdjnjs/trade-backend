@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.core.config import get_settings
 from app.core.config import get_allowed_origins
 from app.routers import chat, cold_email, lead_research, localization, mail_assistant, templates
 
@@ -28,6 +29,17 @@ def root():
 @app.get("/health")
 def health_check():
     return {"status": "ok", "service": "trade-ai-workbench"}
+
+
+@app.get("/health/env")
+def health_env():
+    settings = get_settings()
+    return {
+        "status": "ok",
+        "openai_api_key_configured": bool(settings.openai_api_key),
+        "database_url_configured": bool(settings.database_url),
+        "llm_model": settings.llm_model,
+    }
 
 
 app.include_router(
