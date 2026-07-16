@@ -13,6 +13,7 @@ beautifulsoup4==4.13.4
 lxml==6.0.0
 
 openai==1.95.1
+google-ads==26.1.0
 langchain==0.3.26
 langchain-community==0.3.27
 

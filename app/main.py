@@ -1,15 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.core.config import get_settings
-from app.core.config import get_allowed_origins
-from app.routers import chat, cold_email, lead_research, localization, mail_assistant, templates
+from app.core.config import get_allowed_origins, get_settings
+from app.routers import chat, cold_email, lead_research, localization, mail_assistant, market_insights, templates
 
 
 app = FastAPI(
     title="外贸全流程提效工作台 API",
-    description="面向外贸团队的客户背调、邮件助理和多语言文案生成平台",
-    version="0.2.0",
+    description="面向外贸团队的客户背调、邮件助理、多语言文案和市场热词洞察平台",
+    version="0.3.0",
 )
 
 app.add_middleware(
@@ -34,9 +33,19 @@ def health_check():
 @app.get("/health/env")
 def health_env():
     settings = get_settings()
+    google_ads_configured = all(
+        [
+            settings.google_ads_developer_token,
+            settings.google_ads_client_id,
+            settings.google_ads_client_secret,
+            settings.google_ads_refresh_token,
+            settings.google_ads_customer_id,
+        ]
+    )
     return {
         "status": "ok",
         "openai_api_key_configured": bool(settings.openai_api_key),
+        "google_ads_configured": google_ads_configured,
         "database_url_configured": bool(settings.database_url),
         "llm_model": settings.llm_model,
     }
@@ -76,4 +85,10 @@ app.include_router(
     chat.router,
     prefix="/api/chat",
     tags=["AI 对话工作台"],
+)
+
+app.include_router(
+    market_insights.router,
+    prefix="/api/market-insights",
+    tags=["市场热词洞察"],
 )
